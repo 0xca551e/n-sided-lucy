@@ -95,102 +95,136 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 fn view(model: Model) -> Element(Msg) {
   console.log(model)
   html.div([], [
-    html.label([attribute.for("#sides")], [element.text("sides")]),
-    html.input([
-      attribute.id("sides"),
-      attribute.type_("number"),
-      attribute.value(dynamic.from(model.sides)),
-      event.on_input(SetSides),
-    ]),
-    html.label([attribute.for("#angle")], [element.text("angle")]),
-    html.div([], [element.text("0")]),
-    html.input([
-      attribute.id("angle"),
-      attribute.type_("range"),
-      attribute.min("0"),
-      attribute.max("359"),
-      attribute.step("1"),
-      attribute.value(dynamic.from(model.angle)),
-      event.on_input(SetAngle),
-    ]),
-    html.div([], [element.text("360")]),
-    html.label([attribute.for("#pointiness")], [element.text("pointiness")]),
-    html.div([], [element.text("bouba")]),
-    html.input([
-      attribute.id("pointiness"),
-      attribute.type_("range"),
-      attribute.min("0"),
-      attribute.max("100"),
-      attribute.step("1"),
-      attribute.value(dynamic.from(model.pointiness)),
-      event.on_input(SetPointiness),
-    ]),
-    html.div([], [element.text("kiki")]),
-    html.label([attribute.for("#concaviness-convexiness")], [
-      element.text("concaviness/convexiness"),
-    ]),
-    html.div([], [element.text("cavey")]),
-    html.input([
-      attribute.id("concaviness-convexiness"),
-      attribute.type_("range"),
-      attribute.min("0"),
-      attribute.max("100"),
-      attribute.step("1"),
-      attribute.value(dynamic.from(model.convexiness_concaviness)),
-      event.on_input(SetConcavinessConvexiness),
-    ]),
-    html.div([], [element.text("vexy")]),
-    html.label([attribute.for("#face-scale")], [element.text("face")]),
-    html.div([], [element.text("smol")]),
-    html.input([
-      attribute.id("face-scale"),
-      attribute.type_("range"),
-      attribute.min("0"),
-      attribute.max("100"),
-      attribute.step("1"),
-      attribute.value(dynamic.from(model.face_scale)),
-      event.on_input(SetFaceScale),
-    ]),
-    html.div([], [element.text("yes")]),
-    html.fieldset([], [
-      html.legend([], [element.text("Cassie")]),
+    html.div([], [
+      html.label([attribute.for("#sides")], [element.text("sides")]),
       html.input([
-        attribute.id("no-cassie"),
-        attribute.type_("radio"),
-        attribute.name("cassie"),
-        attribute.value(dynamic.from("no")),
-        attribute.checked(model.cassie == "no"),
-        event.on_input(SetCassie),
+        attribute.id("sides"),
+        attribute.type_("number"),
+        attribute.value(dynamic.from(model.sides)),
+        event.on_input(SetSides),
       ]),
-      html.label([attribute.for("no-cassie"), attribute.type_("radio")], [
-        element.text("no thanks"),
+    ]),
+    html.div([], [
+      html.label([attribute.for("#angle")], [element.text("angle")]),
+      html.input([
+        attribute.id("angle"),
+        attribute.type_("range"),
+        attribute.min("0"),
+        attribute.max("359"),
+        attribute.step("1"),
+        attribute.value(dynamic.from(model.angle)),
+        event.on_input(SetAngle),
+      ]),
+      html.span([], [element.text(int.to_string(model.angle))]),
+    ]),
+    html.div([], [
+      html.label([attribute.for("#pointiness")], [element.text("pointiness")]),
+      html.input([
+        attribute.id("pointiness"),
+        attribute.type_("range"),
+        attribute.min("0"),
+        attribute.max("100"),
+        attribute.step("1"),
+        attribute.value(dynamic.from(model.pointiness)),
+        event.on_input(SetPointiness),
+      ]),
+      html.span([], [
+        element.text({
+          case model.pointiness {
+            0 -> "bouba"
+            100 -> "kiki"
+            n -> int.to_string(n)
+          }
+        }),
+      ]),
+    ]),
+    html.div([], [
+      html.label([attribute.for("#concaviness-convexiness")], [
+        element.text("concaviness/convexiness"),
       ]),
       html.input([
-        attribute.id("yes-cassie"),
-        attribute.type_("radio"),
-        attribute.name("cassie"),
-        attribute.value(dynamic.from("yes")),
-        attribute.checked(model.cassie == "yes"),
-        event.on_input(SetCassie),
+        attribute.id("concaviness-convexiness"),
+        attribute.type_("range"),
+        attribute.min("0"),
+        attribute.max("100"),
+        attribute.step("1"),
+        attribute.value(dynamic.from(model.convexiness_concaviness)),
+        event.on_input(SetConcavinessConvexiness),
       ]),
-      html.label([attribute.for("yes-cassie"), attribute.type_("radio")], [
-        element.text("sure"),
+      html.span([], [
+        element.text({
+          case model.convexiness_concaviness {
+            0 -> "cavey"
+            100 -> "yes"
+            n -> int.to_string(n)
+          }
+        }),
       ]),
     ]),
-    html.input([
-      attribute.id("lucy-visible"),
-      attribute.type_("checkbox"),
-      attribute.checked(model.can_lucy_me),
-      event.on_input(SetCanLucyMe),
+    html.div([], [
+      html.label([attribute.for("#face-scale")], [element.text("face")]),
+      html.input([
+        attribute.id("face-scale"),
+        attribute.type_("range"),
+        attribute.min("1"),
+        attribute.max("100"),
+        attribute.step("1"),
+        attribute.value(dynamic.from(model.face_scale)),
+        event.on_input(SetFaceScale),
+      ]),
+      html.span([], [
+        element.text({
+          case model.face_scale {
+            1 -> "smol"
+            100 -> "yes"
+            n -> int.to_string(n)
+          }
+        }),
+      ]),
     ]),
-    html.label([attribute.for("lucy-visible"), attribute.type_("checkbox")], [
-      element.text("now lucy me"),
-      {
-        case model.can_lucy_me {
-          False -> element.text("(now you don't)")
-          True -> element.none()
-        }
-      },
+    html.div([], [
+      html.fieldset([], [
+        html.legend([], [element.text("Cassie")]),
+        html.input([
+          attribute.id("no-cassie"),
+          attribute.type_("radio"),
+          attribute.name("cassie"),
+          attribute.value(dynamic.from("no")),
+          attribute.checked(model.cassie == "no"),
+          event.on_input(SetCassie),
+        ]),
+        html.label([attribute.for("no-cassie"), attribute.type_("radio")], [
+          element.text("no thanks"),
+        ]),
+        html.input([
+          attribute.id("yes-cassie"),
+          attribute.type_("radio"),
+          attribute.name("cassie"),
+          attribute.value(dynamic.from("yes")),
+          attribute.checked(model.cassie == "yes"),
+          event.on_input(SetCassie),
+        ]),
+        html.label([attribute.for("yes-cassie"), attribute.type_("radio")], [
+          element.text("sure"),
+        ]),
+      ]),
+    ]),
+    html.div([], [
+      html.input([
+        attribute.id("lucy-visible"),
+        attribute.type_("checkbox"),
+        attribute.checked(model.can_lucy_me),
+        event.on_input(SetCanLucyMe),
+      ]),
+      html.label([attribute.for("lucy-visible"), attribute.type_("checkbox")], [
+        element.text("now lucy me"),
+        {
+          case model.can_lucy_me {
+            False -> element.text("(now you don't)")
+            True -> element.none()
+          }
+        },
+      ]),
     ]),
   ])
 }
