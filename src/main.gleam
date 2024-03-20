@@ -1,6 +1,11 @@
 import gleam/bool
 import gleam/dynamic
+import gleam/float
 import gleam/int
+import gleam/javascript.{type Reference}
+import gleam/list
+import gleam/result
+import plinth/browser/window
 import plinth/javascript/console
 import lustre
 import lustre/attribute
@@ -18,6 +23,9 @@ type Model {
     face_scale: Int,
     cassie: String,
     can_lucy_me: Bool,
+    happy: Bool,
+    blink: Bool,
+    game_state: GameState,
   )
 }
 
@@ -29,9 +37,100 @@ pub type Msg {
   SetFaceScale(String)
   SetCassie(String)
   SetCanLucyMe(String)
+  SetHappy(Bool)
+  SetBlink(Bool)
+}
+
+fn with_happy(model: Model) -> Model {
+  javascript.set_reference(model.game_state.happy_playing, True)
+  javascript.set_reference(model.game_state.happy_timer, 1000.0)
+  Model(..model, happy: True)
+}
+
+type GameState {
+  GameState(
+    last_time: Reference(Float),
+    happy_playing: Reference(Bool),
+    happy_timer: Reference(Float),
+    blink_playing: Reference(Bool),
+    blink_timer: Reference(Float),
+  )
+}
+
+fn animation(time, dispatch, game_state: GameState) {
+  let dt = time -. javascript.dereference(game_state.last_time)
+  javascript.set_reference(game_state.last_time, time)
+  case javascript.dereference(game_state.happy_playing) {
+    True -> {
+      javascript.set_reference(
+        game_state.happy_timer,
+        javascript.dereference(game_state.happy_timer) -. dt,
+      )
+      case { javascript.dereference(game_state.happy_timer) <. 0.0 } {
+        True -> {
+          javascript.set_reference(game_state.happy_playing, False)
+          dispatch(SetHappy(False))
+        }
+        _ -> Nil
+      }
+    }
+    _ -> Nil
+  }
+  case javascript.dereference(game_state.blink_playing) {
+    True -> {
+      javascript.set_reference(
+        game_state.blink_timer,
+        javascript.dereference(game_state.blink_timer) -. dt,
+      )
+      case { javascript.dereference(game_state.blink_timer) <. 0.0 } {
+        True -> {
+          javascript.set_reference(game_state.blink_playing, False)
+          dispatch(SetBlink(False))
+        }
+        _ -> Nil
+      }
+    }
+    False ->
+      case { javascript.dereference(game_state.happy_timer) <. 0.0 } {
+        True -> Nil
+        False -> {
+          let chance = dt /. 4000.0
+          let roll = float.random()
+          case { roll <=. chance } {
+            True -> {
+              let blink_durations = [100.0, 100.0, 100.0, 500.0, 1000.0]
+              let roll = int.random(5)
+              javascript.set_reference(game_state.blink_playing, True)
+              javascript.set_reference(
+                game_state.blink_timer,
+                blink_durations
+                  |> list.at(roll)
+                  |> result.unwrap(0.0),
+              )
+              dispatch(SetBlink(True))
+              Nil
+            }
+            False -> Nil
+          }
+        }
+      }
+  }
+
+  window.request_animation_frame(fn(time) {
+    animation(time, dispatch, game_state)
+  })
+  Nil
 }
 
 fn init(_) -> #(Model, Effect(Msg)) {
+  let game_state =
+    GameState(
+      last_time: javascript.make_reference(0.0),
+      happy_playing: javascript.make_reference(False),
+      happy_timer: javascript.make_reference(0.0),
+      blink_playing: javascript.make_reference(False),
+      blink_timer: javascript.make_reference(0.0),
+    )
   #(
     Model(
       sides: 5,
@@ -41,8 +140,16 @@ fn init(_) -> #(Model, Effect(Msg)) {
       face_scale: 30,
       cassie: "no",
       can_lucy_me: True,
+      happy: False,
+      blink: False,
+      game_state: game_state,
     ),
-    effect.from(fn(dispatch) { console.log("Hello world") }),
+    effect.from(fn(dispatch) {
+      window.request_animation_frame(fn(time) {
+        animation(time, dispatch, game_state)
+      })
+      Nil
+    }),
   )
 }
 
@@ -50,18 +157,27 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
     SetSides(sides) ->
       case int.parse(sides) {
-        Ok(sides) -> #(Model(..model, sides: sides), effect.none())
+        Ok(sides) -> #(
+          Model(..model, sides: sides)
+            |> with_happy,
+          effect.none(),
+        )
         _ -> #(model, effect.none())
       }
     SetAngle(angle) ->
       case int.parse(angle) {
-        Ok(angle) -> #(Model(..model, angle: angle), effect.none())
+        Ok(angle) -> #(
+          Model(..model, angle: angle)
+            |> with_happy,
+          effect.none(),
+        )
         _ -> #(model, effect.none())
       }
     SetPointiness(pointiness) ->
       case int.parse(pointiness) {
         Ok(pointiness) -> #(
-          Model(..model, pointiness: pointiness),
+          Model(..model, pointiness: pointiness)
+            |> with_happy,
           effect.none(),
         )
         _ -> #(model, effect.none())
@@ -69,7 +185,8 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     SetConcavinessConvexiness(convexiness_concaviness) ->
       case int.parse(convexiness_concaviness) {
         Ok(convexiness_concaviness) -> #(
-          Model(..model, convexiness_concaviness: convexiness_concaviness),
+          Model(..model, convexiness_concaviness: convexiness_concaviness)
+            |> with_happy,
           effect.none(),
         )
         _ -> #(model, effect.none())
@@ -77,17 +194,29 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     SetFaceScale(face_scale) ->
       case int.parse(face_scale) {
         Ok(face_scale) -> #(
-          Model(..model, face_scale: face_scale),
+          Model(..model, face_scale: face_scale)
+            |> with_happy,
           effect.none(),
         )
         _ -> #(model, effect.none())
       }
-    SetCassie(answer) -> #(Model(..model, cassie: answer), effect.none())
+    SetCassie(answer) -> #(
+      Model(..model, cassie: answer)
+        |> with_happy,
+      effect.none(),
+    )
     SetCanLucyMe(_) -> {
       #(
-        Model(..model, can_lucy_me: bool.negate(model.can_lucy_me)),
+        Model(..model, can_lucy_me: bool.negate(model.can_lucy_me))
+          |> with_happy,
         effect.none(),
       )
+    }
+    SetHappy(happy) -> {
+      #(Model(..model, happy: happy), effect.none())
+    }
+    SetBlink(blink) -> {
+      #(Model(..model, blink: blink), effect.none())
     }
   }
 }
