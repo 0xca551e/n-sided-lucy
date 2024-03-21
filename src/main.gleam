@@ -131,7 +131,7 @@ fn animation(time, dispatch, game_state: GameState) {
         game_state.happy_timer,
         javascript.dereference(game_state.happy_timer) -. dt,
       )
-      case { javascript.dereference(game_state.happy_timer) <. 0.0 } {
+      case { javascript.dereference(game_state.happy_timer) <=. 0.0 } {
         True -> {
           javascript.set_reference(game_state.happy_playing, False)
           dispatch(SetHappy(False))
@@ -147,7 +147,7 @@ fn animation(time, dispatch, game_state: GameState) {
         game_state.blink_timer,
         javascript.dereference(game_state.blink_timer) -. dt,
       )
-      case { javascript.dereference(game_state.blink_timer) <. 0.0 } {
+      case { javascript.dereference(game_state.blink_timer) <=. 0.0 } {
         True -> {
           javascript.set_reference(game_state.blink_playing, False)
           dispatch(SetBlink(False))
@@ -156,9 +156,8 @@ fn animation(time, dispatch, game_state: GameState) {
       }
     }
     False ->
-      case { javascript.dereference(game_state.happy_timer) <. 0.0 } {
-        True -> Nil
-        False -> {
+      case { javascript.dereference(game_state.happy_timer) <=. 0.0 } {
+        True -> {
           let chance = dt /. 4000.0
           let roll = float.random()
           case { roll <=. chance } {
@@ -178,6 +177,7 @@ fn animation(time, dispatch, game_state: GameState) {
             False -> Nil
           }
         }
+        False -> Nil
       }
   }
   window.request_animation_frame(fn(time) {
