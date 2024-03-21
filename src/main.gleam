@@ -557,8 +557,7 @@ fn view(model: Model) -> Element(Msg) {
         html.div([], [
           element.text({
             case model.eye_distance {
-              1 -> "moop"
-              100 -> "meep"
+              100 -> "derp"
               n -> int.to_string(n)
             }
           }),
