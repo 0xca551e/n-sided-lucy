@@ -57,6 +57,7 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow: scroll;
 }
 
 .form__grid input {
@@ -114,10 +115,6 @@ button {
   .lucy {
     flex: 0;
     height: 200px;
-  }
-
-  .form {
-    overflow: scroll;
   }
 
   .form__grid {
