@@ -593,7 +593,8 @@ fn view(model: Model) -> Element(Msg) {
         ]),
         html.div([], [
           element.text(case model.mouth_size {
-            0 -> "but i must scream"
+            0 -> "shut"
+            100 -> "aaaa"
             n -> int.to_string(n)
           }),
         ]),
