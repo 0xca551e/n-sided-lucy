@@ -71,6 +71,10 @@ fn every_odd(l: List(a)) -> List(a) {
   })
 }
 
+fn degrees_to_radians(degrees: Float) -> Float {
+  degrees *. { pi() /. 180.0 }
+}
+
 type Model {
   Model(
     sides: Int,
@@ -191,9 +195,9 @@ fn init(_) -> #(Model, Effect(Msg)) {
   #(
     Model(
       sides: 5,
-      angle: 0,
-      pointiness: 70,
-      arm_ratio: 1.0,
+      angle: 288,
+      pointiness: 50,
+      arm_ratio: 0.7,
       face_scale: 30,
       cassie: "no",
       can_lucy_me: True,
@@ -420,7 +424,11 @@ fn view(model: Model) -> Element(Msg) {
   let arm_angles =
     list.range(0, model.sides - 1)
     |> list.map(int.to_float)
-    |> list.map(fn(i) { angle_between_arms_radians *. i })
+    |> list.map(fn(i) {
+      angle_between_arms_radians
+      *. i
+      +. degrees_to_radians(int.to_float(model.angle))
+    })
   let pit_angles =
     arm_angles
     |> list.map(fn(x) { x +. angle_between_arms_radians /. 2.0 })
@@ -546,6 +554,82 @@ fn view(model: Model) -> Element(Msg) {
       "Z",
     ]
     |> string.join(" ")
+  let eye_radius = 4.0
+  let left_eye =
+    #(
+      model.angle
+        |> int.subtract(90)
+        |> int.to_float()
+        |> degrees_to_radians()
+        |> cos(),
+      model.angle
+        |> int.subtract(90)
+        |> int.to_float()
+        |> degrees_to_radians()
+        |> sin(),
+    )
+    |> scale(15.0)
+    |> translate(50.0, 50.0)
+  let right_eye =
+    #(
+      model.angle
+        |> int.add(90)
+        |> int.to_float()
+        |> degrees_to_radians()
+        |> cos(),
+      model.angle
+        |> int.add(90)
+        |> int.to_float()
+        |> degrees_to_radians()
+        |> sin(),
+    )
+    |> scale(15.0)
+    |> translate(50.0, 50.0)
+  let smile_center =
+    #(
+      model.angle
+        |> int.add(180)
+        |> int.to_float()
+        |> degrees_to_radians()
+        |> cos(),
+      model.angle
+        |> int.add(180)
+        |> int.to_float()
+        |> degrees_to_radians()
+        |> sin(),
+    )
+    |> scale(5.0)
+    |> translate(50.0, 50.0)
+  let smile_left =
+    #(
+      model.angle
+        |> int.subtract(90)
+        |> int.to_float()
+        |> degrees_to_radians()
+        |> cos(),
+      model.angle
+        |> int.subtract(90)
+        |> int.to_float()
+        |> degrees_to_radians()
+        |> sin(),
+    )
+    |> scale(4.0)
+    |> translate(smile_center.0, smile_center.1)
+  let smile_right =
+    #(
+      model.angle
+        |> int.add(90)
+        |> int.to_float()
+        |> degrees_to_radians()
+        |> cos(),
+      model.angle
+        |> int.add(90)
+        |> int.to_float()
+        |> degrees_to_radians()
+        |> sin(),
+    )
+    |> scale(4.0)
+    |> translate(smile_center.0, smile_center.1)
   let lucy =
     html.div([], [
       html.svg(
@@ -559,7 +643,49 @@ fn view(model: Model) -> Element(Msg) {
           svg.path([
             attribute.attribute("d", full_command),
             attribute.attribute("stroke", "black"),
+            attribute.attribute("stroke-width", "4px"),
             attribute.attribute("fill", "#ffaff3"),
+          ]),
+          svg.circle([
+            attribute.attribute("cx", float.to_string(left_eye.0)),
+            attribute.attribute("cy", float.to_string(left_eye.1)),
+            attribute.attribute("r", float.to_string(eye_radius)),
+            attribute.attribute("fill", "black"),
+            attribute.attribute("d", full_command),
+          ]),
+          svg.circle([
+            attribute.attribute("cx", float.to_string(right_eye.0)),
+            attribute.attribute("cy", float.to_string(right_eye.1)),
+            attribute.attribute("r", float.to_string(eye_radius)),
+            attribute.attribute("fill", "black"),
+            attribute.attribute("d", full_command),
+          ]),
+          svg.path([
+            attribute.attribute(
+              "d",
+              [
+                  "M",
+                  smile_left.0
+                    |> float.to_string(),
+                  smile_left.1
+                    |> float.to_string(),
+                  "A",
+                  "2.0",
+                  "2.0",
+                  "0",
+                  "0",
+                  "0",
+                  smile_right.0
+                    |> float.to_string(),
+                  smile_right.1
+                    |> float.to_string(),
+                ]
+                |> string.join(" "),
+            ),
+            attribute.attribute("fill", "none"),
+            attribute.attribute("stroke", "black"),
+            attribute.attribute("stroke-width", "4px"),
+            attribute.attribute("stroke-linecap", "round"),
           ]),
         ],
       ),
