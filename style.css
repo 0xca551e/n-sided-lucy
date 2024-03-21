@@ -73,6 +73,12 @@ h2 {
   text-align: right;
 }
 
+.form__grid-buttons {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 16px;
+}
+
 input {
   accent-color: #ffaff3;
 }

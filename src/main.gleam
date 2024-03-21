@@ -17,13 +17,16 @@ import lustre/element/html
 import lustre/element/svg
 import lustre/event
 
-@external(javascript, "./math.js", "pi")
+@external(javascript, "./external.js", "downloadSvg")
+fn download_svg(selector: String) -> Nil
+
+@external(javascript, "./external.js", "pi")
 fn pi() -> Float
 
-@external(javascript, "./math.js", "sin")
+@external(javascript, "./external.js", "sin")
 fn sin(x: Float) -> Float
 
-@external(javascript, "./math.js", "cos")
+@external(javascript, "./external.js", "cos")
 fn cos(x: Float) -> Float
 
 fn scale(point: #(Float, Float), scalar: Float) -> #(Float, Float) {
@@ -87,6 +90,7 @@ type Model {
 
 pub type Msg {
   Reset
+  DownloadSvg
   SetSides(String)
   SetAngle(String)
   SetPointiness(String)
@@ -229,6 +233,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         |> with_happy,
       effect.none(),
     )
+    DownloadSvg -> #(model, effect.from(fn(_) { download_svg("#lucy-svg") }))
     SetSides(sides) ->
       case int.parse(sides) {
         Ok(sides) -> #(
@@ -479,7 +484,7 @@ fn mouth(distance: Int, height: Int) -> Element(Msg) {
 fn view(model: Model) -> Element(Msg) {
   let form =
     html.div([attribute.class("form")], [
-      html.h2([], [element.text("n-sided-lucy!")]),
+      html.h2([], [element.text("n-sided lucy!")]),
       html.div([attribute.class("form__grid")], [
         html.label([attribute.for("#sides")], [element.text("sides")]),
         html.input([
@@ -674,7 +679,10 @@ fn view(model: Model) -> Element(Msg) {
           ],
         ),
       ]),
-      html.button([event.on_click(Reset)], [element.text("reset")]),
+      html.div([attribute.class("form__grid-buttons")], [
+        html.button([event.on_click(DownloadSvg)], [element.text("download")]),
+        html.button([event.on_click(Reset)], [element.text("reset")]),
+      ]),
     ])
 
   let angle_between_arms_radians = { pi() *. 2.0 } /. int.to_float(model.sides)
@@ -809,6 +817,7 @@ fn view(model: Model) -> Element(Msg) {
     html.div([attribute.class("lucy")], [
       html.svg(
         [
+          attribute.id("lucy-svg"),
           attribute.attribute("viewBox", "0 0 100 100"),
           attribute.attribute("width", "90%"),
           attribute.attribute("height", "90%"),
