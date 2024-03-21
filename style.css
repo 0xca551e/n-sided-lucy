@@ -1,0 +1,78 @@
+@font-face {
+  font-display: swap;
+  font-family: "Lexend";
+  font-style: normal;
+  font-weight: 400;
+  src: url("/fonts/lexend-v19-latin-regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-display: swap;
+  font-family: "Outfit";
+  font-style: normal;
+  font-weight: 400;
+  src: url("/fonts/outfit-v11-latin-regular.woff2") format("woff2");
+}
+
+body {
+  background-color: #fffbe8;
+  color: #1e1e1e;
+  font-family: "Outfit";
+  font-size: 22px;
+}
+
+h2 {
+  font-family: "Lexend";
+  font-size: 36px;
+}
+
+.app {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+}
+
+.lucy {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form {
+  flex: 1;
+  color: #fefefc;
+  background-color: #292d3e;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  column-gap: 16px;
+}
+
+.form__grid label {
+  text-align: right;
+}
+
+input {
+  accent-color: #ffaff3;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+button {
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: #fefefc;
+  color: #1e1e1e;
+}

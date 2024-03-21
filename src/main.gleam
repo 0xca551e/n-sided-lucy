@@ -336,7 +336,7 @@ fn eye() -> Element(Msg) {
     attribute.attribute("cx", "0.0"),
     attribute.attribute("cy", "0.0"),
     attribute.attribute("r", "4.0"),
-    attribute.attribute("fill", "black"),
+    attribute.attribute("fill", "#151515"),
     attribute.attribute("stroke", "none"),
   ])
 }
@@ -346,7 +346,7 @@ fn happy_eye(flip: Bool) -> Element(Msg) {
     svg.polyline([
       attribute.attribute("points", "-2,-2.67 2,0 -2,2.67"),
       attribute.attribute("fill", "none"),
-      attribute.attribute("stroke", "black"),
+      attribute.attribute("stroke", "#151515"),
       attribute.attribute("stroke-width", "4px"),
       attribute.attribute("stroke-linecap", "round"),
     ])
@@ -362,7 +362,7 @@ fn blink_eye() -> Element(Msg) {
     attribute.attribute("y1", "0"),
     attribute.attribute("x2", "4"),
     attribute.attribute("y2", "0"),
-    attribute.attribute("stroke", "black"),
+    attribute.attribute("stroke", "#151515"),
     attribute.attribute("stroke-width", "2px"),
     attribute.attribute("stroke-linecap", "round"),
   ])
@@ -468,7 +468,7 @@ fn mouth(distance: Int, height: Int) -> Element(Msg) {
             |> string.join(""),
         ),
         attribute.attribute("fill", "none"),
-        attribute.attribute("stroke", "black"),
+        attribute.attribute("stroke", "#151515"),
         attribute.attribute("stroke-width", "4px"),
         attribute.attribute("stroke-linecap", "round"),
       ]),
@@ -477,10 +477,10 @@ fn mouth(distance: Int, height: Int) -> Element(Msg) {
 }
 
 fn view(model: Model) -> Element(Msg) {
-  console.log(model)
   let form =
-    html.div([], [
-      html.div([], [
+    html.div([attribute.class("form")], [
+      html.h2([], [element.text("n-sided-lucy!")]),
+      html.div([attribute.class("form__grid")], [
         html.label([attribute.for("#sides")], [element.text("sides")]),
         html.input([
           attribute.id("sides"),
@@ -488,8 +488,8 @@ fn view(model: Model) -> Element(Msg) {
           attribute.value(dynamic.from(model.sides)),
           event.on_input(SetSides),
         ]),
-      ]),
-      html.div([], [
+        html.div([], []),
+        //
         html.label([attribute.for("#angle")], [element.text("angle")]),
         html.input([
           attribute.id("angle"),
@@ -501,8 +501,7 @@ fn view(model: Model) -> Element(Msg) {
           event.on_input(SetAngle),
         ]),
         html.span([], [element.text(int.to_string(model.angle))]),
-      ]),
-      html.div([], [
+        //
         html.label([attribute.for("#pointiness")], [element.text("pointiness")]),
         html.input([
           attribute.id("pointiness"),
@@ -513,7 +512,7 @@ fn view(model: Model) -> Element(Msg) {
           attribute.value(dynamic.from(model.pointiness)),
           event.on_input(SetPointiness),
         ]),
-        html.span([], [
+        html.div([], [
           element.text({
             case model.pointiness {
               0 -> "bouba"
@@ -522,8 +521,7 @@ fn view(model: Model) -> Element(Msg) {
             }
           }),
         ]),
-      ]),
-      html.div([], [
+        //
         html.label([attribute.for("#arm-ratio")], [element.text("arm ratio")]),
         html.input([
           attribute.id("arm-ratio"),
@@ -534,7 +532,7 @@ fn view(model: Model) -> Element(Msg) {
           attribute.value(dynamic.from(model.arm_ratio)),
           event.on_input(SetArmRatio),
         ]),
-        html.span([], [
+        html.div([], [
           element.text({
             case model.arm_ratio {
               x if x <=. 0.1 -> "kirby"
@@ -543,10 +541,9 @@ fn view(model: Model) -> Element(Msg) {
             }
           }),
         ]),
-      ]),
-      html.div([], [
+        //
         html.label([attribute.for("#eye-distance")], [
-          element.text("eye-distance"),
+          element.text("eye distance"),
         ]),
         html.input([
           attribute.id("eye-distance"),
@@ -557,7 +554,7 @@ fn view(model: Model) -> Element(Msg) {
           attribute.value(dynamic.from(model.eye_distance)),
           event.on_input(SetEyeDistance),
         ]),
-        html.span([], [
+        html.div([], [
           element.text({
             case model.eye_distance {
               1 -> "moop"
@@ -566,8 +563,7 @@ fn view(model: Model) -> Element(Msg) {
             }
           }),
         ]),
-      ]),
-      html.div([], [
+        //
         html.label([attribute.for("#eye-height")], [element.text("eye height")]),
         html.input([
           attribute.id("eye-height"),
@@ -578,9 +574,8 @@ fn view(model: Model) -> Element(Msg) {
           attribute.value(dynamic.from(model.eye_height)),
           event.on_input(SetEyeHeight),
         ]),
-        html.span([], [element.text(int.to_string(model.eye_height))]),
-      ]),
-      html.div([], [
+        html.div([], [element.text(int.to_string(model.eye_height))]),
+        //
         html.label([attribute.for("#mouth-size")], [element.text("mouth size")]),
         html.input([
           attribute.id("mouth-size"),
@@ -591,14 +586,13 @@ fn view(model: Model) -> Element(Msg) {
           attribute.value(dynamic.from(model.mouth_size)),
           event.on_input(SetMouthSize),
         ]),
-        html.span([], [
+        html.div([], [
           element.text(case model.mouth_size {
             0 -> "but i must scream"
             n -> int.to_string(n)
           }),
         ]),
-      ]),
-      html.div([], [
+        //
         html.label([attribute.for("#mouth-height")], [
           element.text("mouth height"),
         ]),
@@ -611,9 +605,8 @@ fn view(model: Model) -> Element(Msg) {
           attribute.value(dynamic.from(model.mouth_height)),
           event.on_input(SetMouthHeight),
         ]),
-        html.span([], [element.text(int.to_string(model.mouth_height))]),
-      ]),
-      html.div([], [
+        html.div([], [element.text(int.to_string(model.mouth_height))]),
+        //
         html.label([attribute.for("#face-scale")], [element.text("face")]),
         html.input([
           attribute.id("face-scale"),
@@ -624,7 +617,7 @@ fn view(model: Model) -> Element(Msg) {
           attribute.value(dynamic.from(model.face_scale)),
           event.on_input(SetFaceScale),
         ]),
-        html.span([], [
+        html.div([], [
           element.text({
             case model.face_scale {
               1 -> "smol"
@@ -648,6 +641,7 @@ fn view(model: Model) -> Element(Msg) {
           html.label([attribute.for("no-cassie"), attribute.type_("radio")], [
             element.text("no thanks"),
           ]),
+          html.br([]),
           html.input([
             attribute.id("yes-cassie"),
             attribute.type_("radio"),
@@ -813,87 +807,87 @@ fn view(model: Model) -> Element(Msg) {
     ]
     |> string.join(" ")
   let lucy =
-    html.div(
-      [
-        attribute.style([
-          #("visibility", case model.can_lucy_me {
-            True -> "visible"
-            False -> "hidden"
-          }),
-        ]),
-      ],
-      [
-        html.svg(
-          [
-            attribute.attribute("viewBox", "0 0 100 100"),
-            attribute.attribute("width", "100%"),
-            attribute.attribute("height", "100%"),
-            attribute.attribute("xmlns", "http://www.w3.org/2000/svg"),
-          ],
-          [
-            svg.g(
-              [
-                attribute.attribute(
-                  "transform",
-                  [
-                      "translate(50,50) ",
-                      "rotate(",
-                      model.angle
-                        |> int.to_string(),
-                      ")",
-                    ]
-                    |> string.join(""),
-                ),
-              ],
-              [
-                svg.path([
-                  attribute.attribute("d", full_command),
-                  attribute.attribute("stroke", "black"),
-                  attribute.attribute("stroke-width", "4px"),
-                  attribute.attribute("fill", {
-                    case model.cassie {
-                      "yes" -> "#ca551e"
-                      _ -> "#ffaff3"
-                    }
-                  }),
-                ]),
-                svg.g(
-                  [
-                    attribute.attribute(
-                      "transform",
-                      [
-                          "scale(",
-                          model.face_scale
-                            |> int.to_float()
-                            |> float.divide(100.0)
-                            |> result.unwrap(1.0)
-                            |> float.to_string(),
-                          ")",
-                        ]
-                        |> string.join(""),
+    html.div([attribute.class("lucy")], [
+      html.svg(
+        [
+          attribute.attribute("viewBox", "0 0 100 100"),
+          attribute.attribute("width", "90%"),
+          attribute.attribute("height", "90%"),
+          attribute.attribute("xmlns", "http://www.w3.org/2000/svg"),
+          attribute.style([
+            #("visibility", case model.can_lucy_me {
+              True -> "visible"
+              False -> "hidden"
+            }),
+          ]),
+        ],
+        [
+          svg.g(
+            [
+              attribute.attribute(
+                "transform",
+                [
+                    "translate(50,50) ",
+                    "rotate(",
+                    model.angle
+                      |> int.to_string(),
+                    ")",
+                  ]
+                  |> string.join(""),
+              ),
+            ],
+            [
+              svg.path([
+                attribute.attribute("d", full_command),
+                attribute.attribute("stroke", "#151515"),
+                attribute.attribute("stroke-width", "4px"),
+                attribute.attribute("fill", {
+                  case model.cassie {
+                    "yes" -> "#ca551e"
+                    _ -> "#ffaff3"
+                  }
+                }),
+              ]),
+              svg.g(
+                [
+                  attribute.attribute(
+                    "transform",
+                    [
+                        "scale(",
+                        model.face_scale
+                          |> int.to_float()
+                          |> float.divide(100.0)
+                          |> result.unwrap(1.0)
+                          |> float.to_string(),
+                        ")",
+                      ]
+                      |> string.join(""),
+                  ),
+                ],
+                [
+                  svg.g([attribute.attribute("transform", "rotate(90)")], [
+                    eyes(
+                      model.eye_distance,
+                      model.eye_height,
+                      model.happy,
+                      model.blink,
                     ),
-                  ],
-                  [
-                    svg.g([attribute.attribute("transform", "rotate(90)")], [
-                      eyes(
-                        model.eye_distance,
-                        model.eye_height,
-                        model.happy,
-                        model.blink,
-                      ),
-                    ]),
-                    svg.g([attribute.attribute("transform", "rotate(90)")], [
-                      mouth(model.mouth_size, model.mouth_height),
-                    ]),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    )
-  html.div([attribute.style([#("display", "flex")])], [lucy, form])
+                  ]),
+                  svg.g([attribute.attribute("transform", "rotate(90)")], [
+                    mouth(model.mouth_size, model.mouth_height),
+                  ]),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    ])
+  html.div([attribute.class("app")], [
+    lucy,
+    html.img([attribute.src("/waves.svg")]),
+    form,
+  ])
 }
 
 pub fn main() {
