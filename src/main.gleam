@@ -873,7 +873,10 @@ fn view(model: Model) -> Element(Msg) {
                     ),
                   ]),
                   svg.g([attribute.attribute("transform", "rotate(90)")], [
-                    mouth(model.mouth_size, model.mouth_height),
+                    case model.mouth_size {
+                      0 -> element.none()
+                      x -> mouth(x, model.mouth_height)
+                    },
                   ]),
                 ],
               ),
