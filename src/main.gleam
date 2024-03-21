@@ -500,7 +500,7 @@ fn view(model: Model) -> Element(Msg) {
           attribute.value(dynamic.from(model.angle)),
           event.on_input(SetAngle),
         ]),
-        html.span([], [element.text(int.to_string(model.angle))]),
+        html.div([], [element.text(int.to_string(model.angle))]),
         //
         html.label([attribute.for("#pointiness")], [element.text("pointiness")]),
         html.input([
@@ -887,7 +887,11 @@ fn view(model: Model) -> Element(Msg) {
     ])
   html.div([attribute.class("app")], [
     lucy,
-    html.img([attribute.src("/waves.svg")]),
+    html.img([attribute.class("waves-small"), attribute.src("/waves.svg")]),
+    html.img([
+      attribute.class("waves-large"),
+      attribute.src("/waves-vertical.svg"),
+    ]),
     form,
   ])
 }
