@@ -3,7 +3,6 @@ import gleam/dynamic
 import gleam/float
 import gleam/int
 import gleam/javascript.{type Reference}
-import gleam/javascript/array
 import gleam/list
 import gleam/pair
 import gleam/string
@@ -29,10 +28,6 @@ fn cos(x: Float) -> Float
 
 fn scale(point: #(Float, Float), scalar: Float) -> #(Float, Float) {
   #(point.0 *. scalar, point.1 *. scalar)
-}
-
-fn translate(point: #(Float, Float), dx: Float, dy: Float) -> #(Float, Float) {
-  #(point.0 +. dx, point.1 +. dy)
 }
 
 fn lerp(v0: Float, v1: Float, t: Float) {
@@ -71,16 +66,16 @@ fn every_odd(l: List(a)) -> List(a) {
   })
 }
 
-fn degrees_to_radians(degrees: Float) -> Float {
-  degrees *. { pi() /. 180.0 }
-}
-
 type Model {
   Model(
     sides: Int,
     angle: Int,
     pointiness: Int,
     arm_ratio: Float,
+    eye_distance: Int,
+    eye_height: Int,
+    mouth_size: Int,
+    mouth_height: Int,
     face_scale: Int,
     cassie: String,
     can_lucy_me: Bool,
@@ -95,6 +90,10 @@ pub type Msg {
   SetAngle(String)
   SetPointiness(String)
   SetArmRatio(String)
+  SetEyeDistance(String)
+  SetEyeHeight(String)
+  SetMouthSize(String)
+  SetMouthHeight(String)
   SetFaceScale(String)
   SetCassie(String)
   SetCanLucyMe(String)
@@ -161,14 +160,14 @@ fn animation(time, dispatch, game_state: GameState) {
             True -> {
               let blink_durations = [100.0, 100.0, 100.0, 500.0, 1000.0]
               let roll = int.random(5)
-              //   javascript.set_reference(game_state.blink_playing, True)
-              //   javascript.set_reference(
-              //     game_state.blink_timer,
-              //     blink_durations
-              //       |> list.at(roll)
-              //       |> result.unwrap(0.0),
-              //   )
-              //   dispatch(SetBlink(True))
+              javascript.set_reference(game_state.blink_playing, True)
+              javascript.set_reference(
+                game_state.blink_timer,
+                blink_durations
+                  |> list.at(roll)
+                  |> result.unwrap(0.0),
+              )
+              dispatch(SetBlink(True))
               Nil
             }
             False -> Nil
@@ -176,7 +175,6 @@ fn animation(time, dispatch, game_state: GameState) {
         }
       }
   }
-
   window.request_animation_frame(fn(time) {
     animation(time, dispatch, game_state)
   })
@@ -198,7 +196,11 @@ fn init(_) -> #(Model, Effect(Msg)) {
       angle: 288,
       pointiness: 50,
       arm_ratio: 0.7,
-      face_scale: 30,
+      face_scale: 100,
+      eye_distance: 35,
+      eye_height: 50,
+      mouth_size: 8,
+      mouth_height: 55,
       cassie: "no",
       can_lucy_me: True,
       happy: False,
@@ -252,6 +254,42 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         )
         _ -> #(model, effect.none())
       }
+    SetEyeDistance(eye_distance) ->
+      case int.parse(eye_distance) {
+        Ok(eye_distance) -> #(
+          Model(..model, eye_distance: eye_distance)
+            |> with_happy,
+          effect.none(),
+        )
+        _ -> #(model, effect.none())
+      }
+    SetEyeHeight(eye_height) ->
+      case int.parse(eye_height) {
+        Ok(eye_height) -> #(
+          Model(..model, eye_height: eye_height)
+            |> with_happy,
+          effect.none(),
+        )
+        _ -> #(model, effect.none())
+      }
+    SetMouthSize(mouth_size) ->
+      case int.parse(mouth_size) {
+        Ok(mouth_size) -> #(
+          Model(..model, mouth_size: mouth_size)
+            |> with_happy,
+          effect.none(),
+        )
+        _ -> #(model, effect.none())
+      }
+    SetMouthHeight(mouth_height) ->
+      case int.parse(mouth_height) {
+        Ok(mouth_height) -> #(
+          Model(..model, mouth_height: mouth_height)
+            |> with_happy,
+          effect.none(),
+        )
+        _ -> #(model, effect.none())
+      }
     SetFaceScale(face_scale) ->
       case int.parse(face_scale) {
         Ok(face_scale) -> #(
@@ -280,6 +318,151 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       #(Model(..model, blink: blink), effect.none())
     }
   }
+}
+
+fn eye() -> Element(Msg) {
+  svg.circle([
+    attribute.attribute("cx", "0.0"),
+    attribute.attribute("cy", "0.0"),
+    attribute.attribute("r", "4.0"),
+    attribute.attribute("fill", "black"),
+    attribute.attribute("stroke", "none"),
+  ])
+}
+
+fn happy_eye(flip: Bool) -> Element(Msg) {
+  let eye =
+    svg.polyline([
+      attribute.attribute("points", "-2,-2.67 2,0 -2,2.67"),
+      attribute.attribute("fill", "none"),
+      attribute.attribute("stroke", "black"),
+      attribute.attribute("stroke-width", "4px"),
+      attribute.attribute("stroke-linecap", "round"),
+    ])
+  case flip {
+    True -> svg.g([attribute.attribute("transform", "rotate(180)")], [eye])
+    False -> eye
+  }
+}
+
+fn blink_eye() -> Element(Msg) {
+  svg.line([
+    attribute.attribute("x1", "-4"),
+    attribute.attribute("y1", "0"),
+    attribute.attribute("x2", "4"),
+    attribute.attribute("y2", "0"),
+    attribute.attribute("stroke", "black"),
+    attribute.attribute("stroke-width", "2px"),
+    attribute.attribute("stroke-linecap", "round"),
+  ])
+}
+
+fn eyes(
+  distance: Int,
+  eye_height: Int,
+  happy: Bool,
+  blink: Bool,
+) -> Element(Msg) {
+  let offset = int.to_float(distance) /. 2.0
+  let height = 50 - eye_height
+  svg.g(
+    [
+      attribute.attribute(
+        "transform",
+        [
+            "translate(0,",
+            height
+              |> int.to_string(),
+            ")",
+          ]
+          |> string.join(""),
+      ),
+    ],
+    [
+      svg.g(
+        [
+          attribute.attribute(
+            "transform",
+            [
+                "translate(-",
+                offset
+                  |> float.to_string(),
+                ",0)",
+              ]
+              |> string.join(""),
+          ),
+        ],
+        [
+          case happy, blink {
+            True, _ -> happy_eye(False)
+            _, True -> blink_eye()
+            _, _ -> eye()
+          },
+        ],
+      ),
+      svg.g(
+        [
+          attribute.attribute(
+            "transform",
+            [
+                "translate(",
+                offset
+                  |> float.to_string(),
+                ",0)",
+              ]
+              |> string.join(""),
+          ),
+        ],
+        [
+          case happy, blink {
+            True, _ -> happy_eye(True)
+            _, True -> blink_eye()
+            _, _ -> eye()
+          },
+        ],
+      ),
+    ],
+  )
+}
+
+fn mouth(distance: Int, height: Int) -> Element(Msg) {
+  let offset = distance / 2
+  let height = height - 50
+  svg.g(
+    [
+      attribute.attribute(
+        "transform",
+        [
+            "translate(0,",
+            height
+              |> int.to_string(),
+            ")",
+          ]
+          |> string.join(""),
+      ),
+    ],
+    [
+      svg.path([
+        attribute.attribute(
+          "d",
+          [
+              "M -",
+              offset
+                |> int.to_string(),
+              " 0 A 0.01 0.01 0 0 0 ",
+              offset
+                |> int.to_string(),
+              " 0",
+            ]
+            |> string.join(""),
+        ),
+        attribute.attribute("fill", "none"),
+        attribute.attribute("stroke", "black"),
+        attribute.attribute("stroke-width", "4px"),
+        attribute.attribute("stroke-linecap", "round"),
+      ]),
+    ],
+  )
 }
 
 fn view(model: Model) -> Element(Msg) {
@@ -351,12 +534,81 @@ fn view(model: Model) -> Element(Msg) {
         ]),
       ]),
       html.div([], [
+        html.label([attribute.for("#eye-distance")], [
+          element.text("eye-distance"),
+        ]),
+        html.input([
+          attribute.id("eye-distance"),
+          attribute.type_("range"),
+          attribute.min("1"),
+          attribute.max("100"),
+          attribute.step("1"),
+          attribute.value(dynamic.from(model.eye_distance)),
+          event.on_input(SetEyeDistance),
+        ]),
+        html.span([], [
+          element.text({
+            case model.eye_distance {
+              1 -> "moop"
+              100 -> "meep"
+              n -> int.to_string(n)
+            }
+          }),
+        ]),
+      ]),
+      html.div([], [
+        html.label([attribute.for("#eye-height")], [element.text("eye height")]),
+        html.input([
+          attribute.id("eye-height"),
+          attribute.type_("range"),
+          attribute.min("1"),
+          attribute.max("100"),
+          attribute.step("1"),
+          attribute.value(dynamic.from(model.eye_height)),
+          event.on_input(SetEyeHeight),
+        ]),
+        html.span([], [element.text(int.to_string(model.eye_height))]),
+      ]),
+      html.div([], [
+        html.label([attribute.for("#mouth-size")], [element.text("mouth size")]),
+        html.input([
+          attribute.id("mouth-size"),
+          attribute.type_("range"),
+          attribute.min("0"),
+          attribute.max("100"),
+          attribute.step("1"),
+          attribute.value(dynamic.from(model.mouth_size)),
+          event.on_input(SetMouthSize),
+        ]),
+        html.span([], [
+          element.text(case model.mouth_size {
+            0 -> "but i must scream"
+            n -> int.to_string(n)
+          }),
+        ]),
+      ]),
+      html.div([], [
+        html.label([attribute.for("#mouth-height")], [
+          element.text("mouth height"),
+        ]),
+        html.input([
+          attribute.id("mouth-height"),
+          attribute.type_("range"),
+          attribute.min("1"),
+          attribute.max("100"),
+          attribute.step("1"),
+          attribute.value(dynamic.from(model.mouth_height)),
+          event.on_input(SetMouthHeight),
+        ]),
+        html.span([], [element.text(int.to_string(model.mouth_height))]),
+      ]),
+      html.div([], [
         html.label([attribute.for("#face-scale")], [element.text("face")]),
         html.input([
           attribute.id("face-scale"),
           attribute.type_("range"),
           attribute.min("1"),
-          attribute.max("100"),
+          attribute.max("200"),
           attribute.step("1"),
           attribute.value(dynamic.from(model.face_scale)),
           event.on_input(SetFaceScale),
@@ -365,7 +617,7 @@ fn view(model: Model) -> Element(Msg) {
           element.text({
             case model.face_scale {
               1 -> "smol"
-              100 -> "yes"
+              200 -> "beeg"
               n -> int.to_string(n)
             }
           }),
@@ -424,11 +676,7 @@ fn view(model: Model) -> Element(Msg) {
   let arm_angles =
     list.range(0, model.sides - 1)
     |> list.map(int.to_float)
-    |> list.map(fn(i) {
-      angle_between_arms_radians
-      *. i
-      +. degrees_to_radians(int.to_float(model.angle))
-    })
+    |> list.map(fn(i) { angle_between_arms_radians *. i })
   let pit_angles =
     arm_angles
     |> list.map(fn(x) { x +. angle_between_arms_radians /. 2.0 })
@@ -437,14 +685,12 @@ fn view(model: Model) -> Element(Msg) {
     |> list.map(fn(angle) {
       #(cos(angle), sin(angle))
       |> scale(50.0)
-      |> translate(50.0, 50.0)
     })
   let pit_points =
     pit_angles
     |> list.map(fn(angle) {
       #(cos(angle), sin(angle))
       |> scale(50.0 /. { model.arm_ratio +. 1.0 })
-      |> translate(50.0, 50.0)
     })
   let lines =
     [arm_points, pit_points]
@@ -554,82 +800,6 @@ fn view(model: Model) -> Element(Msg) {
       "Z",
     ]
     |> string.join(" ")
-  let eye_radius = 4.0
-  let left_eye =
-    #(
-      model.angle
-        |> int.subtract(90)
-        |> int.to_float()
-        |> degrees_to_radians()
-        |> cos(),
-      model.angle
-        |> int.subtract(90)
-        |> int.to_float()
-        |> degrees_to_radians()
-        |> sin(),
-    )
-    |> scale(15.0)
-    |> translate(50.0, 50.0)
-  let right_eye =
-    #(
-      model.angle
-        |> int.add(90)
-        |> int.to_float()
-        |> degrees_to_radians()
-        |> cos(),
-      model.angle
-        |> int.add(90)
-        |> int.to_float()
-        |> degrees_to_radians()
-        |> sin(),
-    )
-    |> scale(15.0)
-    |> translate(50.0, 50.0)
-  let smile_center =
-    #(
-      model.angle
-        |> int.add(180)
-        |> int.to_float()
-        |> degrees_to_radians()
-        |> cos(),
-      model.angle
-        |> int.add(180)
-        |> int.to_float()
-        |> degrees_to_radians()
-        |> sin(),
-    )
-    |> scale(5.0)
-    |> translate(50.0, 50.0)
-  let smile_left =
-    #(
-      model.angle
-        |> int.subtract(90)
-        |> int.to_float()
-        |> degrees_to_radians()
-        |> cos(),
-      model.angle
-        |> int.subtract(90)
-        |> int.to_float()
-        |> degrees_to_radians()
-        |> sin(),
-    )
-    |> scale(4.0)
-    |> translate(smile_center.0, smile_center.1)
-  let smile_right =
-    #(
-      model.angle
-        |> int.add(90)
-        |> int.to_float()
-        |> degrees_to_radians()
-        |> cos(),
-      model.angle
-        |> int.add(90)
-        |> int.to_float()
-        |> degrees_to_radians()
-        |> sin(),
-    )
-    |> scale(4.0)
-    |> translate(smile_center.0, smile_center.1)
   let lucy =
     html.div([], [
       html.svg(
@@ -640,53 +810,59 @@ fn view(model: Model) -> Element(Msg) {
           attribute.attribute("xmlns", "http://www.w3.org/2000/svg"),
         ],
         [
-          svg.path([
-            attribute.attribute("d", full_command),
-            attribute.attribute("stroke", "black"),
-            attribute.attribute("stroke-width", "4px"),
-            attribute.attribute("fill", "#ffaff3"),
-          ]),
-          svg.circle([
-            attribute.attribute("cx", float.to_string(left_eye.0)),
-            attribute.attribute("cy", float.to_string(left_eye.1)),
-            attribute.attribute("r", float.to_string(eye_radius)),
-            attribute.attribute("fill", "black"),
-            attribute.attribute("d", full_command),
-          ]),
-          svg.circle([
-            attribute.attribute("cx", float.to_string(right_eye.0)),
-            attribute.attribute("cy", float.to_string(right_eye.1)),
-            attribute.attribute("r", float.to_string(eye_radius)),
-            attribute.attribute("fill", "black"),
-            attribute.attribute("d", full_command),
-          ]),
-          svg.path([
-            attribute.attribute(
-              "d",
-              [
-                  "M",
-                  smile_left.0
-                    |> float.to_string(),
-                  smile_left.1
-                    |> float.to_string(),
-                  "A",
-                  "2.0",
-                  "2.0",
-                  "0",
-                  "0",
-                  "0",
-                  smile_right.0
-                    |> float.to_string(),
-                  smile_right.1
-                    |> float.to_string(),
-                ]
-                |> string.join(" "),
-            ),
-            attribute.attribute("fill", "none"),
-            attribute.attribute("stroke", "black"),
-            attribute.attribute("stroke-width", "4px"),
-            attribute.attribute("stroke-linecap", "round"),
-          ]),
+          svg.g(
+            [
+              attribute.attribute(
+                "transform",
+                [
+                    "translate(50,50) ",
+                    "rotate(",
+                    model.angle
+                      |> int.to_string(),
+                    ")",
+                  ]
+                  |> string.join(""),
+              ),
+            ],
+            [
+              svg.path([
+                attribute.attribute("d", full_command),
+                attribute.attribute("stroke", "black"),
+                attribute.attribute("stroke-width", "4px"),
+                attribute.attribute("fill", "#ffaff3"),
+              ]),
+              svg.g(
+                [
+                  attribute.attribute(
+                    "transform",
+                    [
+                        "scale(",
+                        model.face_scale
+                          |> int.to_float()
+                          |> float.divide(100.0)
+                          |> result.unwrap(1.0)
+                          |> float.to_string(),
+                        ")",
+                      ]
+                      |> string.join(""),
+                  ),
+                ],
+                [
+                  svg.g([attribute.attribute("transform", "rotate(90)")], [
+                    eyes(
+                      model.eye_distance,
+                      model.eye_height,
+                      model.happy,
+                      model.blink,
+                    ),
+                  ]),
+                  svg.g([attribute.attribute("transform", "rotate(90)")], [
+                    mouth(model.mouth_size, model.mouth_height),
+                  ]),
+                ],
+              ),
+            ],
+          ),
         ],
       ),
     ])
