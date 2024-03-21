@@ -8,6 +8,10 @@ export function downloadSvg(selector) {
   link.click();
 }
 
+export function requestAnimationFrame(callback) {
+  return window.requestAnimationFrame(callback);
+}
+
 export function pi() {
   return Math.PI;
 }

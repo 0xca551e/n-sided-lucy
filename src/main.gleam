@@ -7,8 +7,6 @@ import gleam/list
 import gleam/pair
 import gleam/string
 import gleam/result
-import plinth/browser/window
-import plinth/javascript/console
 import lustre
 import lustre/attribute
 import lustre/effect.{type Effect}
@@ -19,6 +17,11 @@ import lustre/event
 
 @external(javascript, "./external.js", "downloadSvg")
 fn download_svg(selector: String) -> Nil
+
+pub type RequestID
+
+@external(javascript, "./external.js", "requestAnimationFrame")
+pub fn request_animation_frame(callback: fn(Float) -> Nil) -> RequestID
 
 @external(javascript, "./external.js", "pi")
 fn pi() -> Float
@@ -180,9 +183,7 @@ fn animation(time, dispatch, game_state: GameState) {
         False -> Nil
       }
   }
-  window.request_animation_frame(fn(time) {
-    animation(time, dispatch, game_state)
-  })
+  request_animation_frame(fn(time) { animation(time, dispatch, game_state) })
   Nil
 }
 
@@ -218,7 +219,7 @@ fn init(_) -> #(Model, Effect(Msg)) {
   #(
     model,
     effect.from(fn(dispatch) {
-      window.request_animation_frame(fn(time) {
+      request_animation_frame(fn(time) {
         animation(time, dispatch, model.game_state)
       })
       Nil
@@ -896,10 +897,10 @@ fn view(model: Model) -> Element(Msg) {
     ])
   html.div([attribute.class("app")], [
     lucy,
-    html.img([attribute.class("waves-small"), attribute.src("/waves.svg")]),
+    html.img([attribute.class("waves-small"), attribute.src("waves.svg")]),
     html.img([
       attribute.class("waves-large"),
-      attribute.src("/waves-vertical.svg"),
+      attribute.src("waves-vertical.svg"),
     ]),
     form,
   ])

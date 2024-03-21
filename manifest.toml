@@ -11,7 +11,7 @@ packages = [
   { name = "gleeunit", version = "1.0.2", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleeunit", source = "hex", outer_checksum = "D364C87AFEB26BDB4FB8A5ABDE67D635DC9FA52D6AB68416044C35B096C6882D" },
   { name = "glint", version = "0.14.0", build_tools = ["gleam"], requirements = ["gleam_community_ansi", "gleam_community_colour", "gleam_stdlib", "snag"], otp_app = "glint", source = "hex", outer_checksum = "21AB16D5A50D4EF34DF935915FDBEE06B2DAEDEE3FCC8584C6E635A866566B38" },
   { name = "lustre", version = "3.1.4", build_tools = ["gleam"], requirements = ["argv", "gleam_community_ansi", "gleam_stdlib", "glint"], otp_app = "lustre", source = "hex", outer_checksum = "E651E39189F55473837FB7386C06BAED7276B37B5058302CAC880F89C25CB4E9" },
-  { name = "plinth", version = "0.1.13", build_tools = ["gleam"], requirements = ["gleam_javascript", "gleam_json", "gleam_stdlib"], source = "local", path = "../plinth" },
+  { name = "plinth", version = "0.1.13", build_tools = ["gleam"], requirements = ["gleam_javascript", "gleam_json", "gleam_stdlib"], otp_app = "plinth", source = "hex", outer_checksum = "F4E20F8739D4D704BB69C8336B5E178D346EB69775BF263DC15B2A77B113A63C" },
   { name = "snag", version = "0.3.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "snag", source = "hex", outer_checksum = "54D32E16E33655346AA3E66CBA7E191DE0A8793D2C05284E3EFB90AD2CE92BCC" },
   { name = "thoas", version = "0.4.1", build_tools = ["rebar3"], requirements = [], otp_app = "thoas", source = "hex", outer_checksum = "4918D50026C073C4AB1388437132C77A6F6F7C8AC43C60C13758CC0ADCE2134E" },
 ]
@@ -21,4 +21,4 @@ gleam_javascript = { version = "~> 0.7" }
 gleam_stdlib = { version = "~> 0.32" }
 gleeunit = { version = "~> 1.0" }
 lustre = { version = "~> 3.1" }
-plinth = { path = "../plinth" }
+plinth = { version = "~> 0.1" }
