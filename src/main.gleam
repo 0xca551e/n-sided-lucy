@@ -86,6 +86,7 @@ type Model {
 }
 
 pub type Msg {
+  Reset
   SetSides(String)
   SetAngle(String)
   SetPointiness(String)
@@ -181,7 +182,7 @@ fn animation(time, dispatch, game_state: GameState) {
   Nil
 }
 
-fn init(_) -> #(Model, Effect(Msg)) {
+fn reset() -> Model {
   let game_state =
     GameState(
       last_time: javascript.make_reference(0.0),
@@ -190,26 +191,31 @@ fn init(_) -> #(Model, Effect(Msg)) {
       blink_playing: javascript.make_reference(False),
       blink_timer: javascript.make_reference(0.0),
     )
+  Model(
+    sides: 5,
+    angle: 288,
+    pointiness: 50,
+    arm_ratio: 0.7,
+    face_scale: 100,
+    eye_distance: 35,
+    eye_height: 50,
+    mouth_size: 8,
+    mouth_height: 55,
+    cassie: "no",
+    can_lucy_me: True,
+    happy: False,
+    blink: False,
+    game_state: game_state,
+  )
+}
+
+fn init(_) -> #(Model, Effect(Msg)) {
+  let model = reset()
   #(
-    Model(
-      sides: 5,
-      angle: 288,
-      pointiness: 50,
-      arm_ratio: 0.7,
-      face_scale: 100,
-      eye_distance: 35,
-      eye_height: 50,
-      mouth_size: 8,
-      mouth_height: 55,
-      cassie: "no",
-      can_lucy_me: True,
-      happy: False,
-      blink: False,
-      game_state: game_state,
-    ),
+    model,
     effect.from(fn(dispatch) {
       window.request_animation_frame(fn(time) {
-        animation(time, dispatch, game_state)
+        animation(time, dispatch, model.game_state)
       })
       Nil
     }),
@@ -218,6 +224,11 @@ fn init(_) -> #(Model, Effect(Msg)) {
 
 fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
+    Reset -> #(
+      Model(..reset(), game_state: model.game_state)
+        |> with_happy,
+      effect.none(),
+    )
     SetSides(sides) ->
       case int.parse(sides) {
         Ok(sides) -> #(
@@ -670,6 +681,7 @@ fn view(model: Model) -> Element(Msg) {
           ],
         ),
       ]),
+      html.button([event.on_click(Reset)], [element.text("Reset")]),
     ])
 
   let angle_between_arms_radians = { pi() *. 2.0 } /. int.to_float(model.sides)
