@@ -801,71 +801,86 @@ fn view(model: Model) -> Element(Msg) {
     ]
     |> string.join(" ")
   let lucy =
-    html.div([], [
-      html.svg(
-        [
-          attribute.attribute("viewBox", "0 0 100 100"),
-          attribute.attribute("width", "100%"),
-          attribute.attribute("height", "100%"),
-          attribute.attribute("xmlns", "http://www.w3.org/2000/svg"),
-        ],
-        [
-          svg.g(
-            [
-              attribute.attribute(
-                "transform",
-                [
-                    "translate(50,50) ",
-                    "rotate(",
-                    model.angle
-                      |> int.to_string(),
-                    ")",
-                  ]
-                  |> string.join(""),
-              ),
-            ],
-            [
-              svg.path([
-                attribute.attribute("d", full_command),
-                attribute.attribute("stroke", "black"),
-                attribute.attribute("stroke-width", "4px"),
-                attribute.attribute("fill", "#ffaff3"),
-              ]),
-              svg.g(
-                [
-                  attribute.attribute(
-                    "transform",
-                    [
-                        "scale(",
-                        model.face_scale
-                          |> int.to_float()
-                          |> float.divide(100.0)
-                          |> result.unwrap(1.0)
-                          |> float.to_string(),
-                        ")",
-                      ]
-                      |> string.join(""),
-                  ),
-                ],
-                [
-                  svg.g([attribute.attribute("transform", "rotate(90)")], [
-                    eyes(
-                      model.eye_distance,
-                      model.eye_height,
-                      model.happy,
-                      model.blink,
+    html.div(
+      [
+        attribute.style([
+          #("visibility", case model.can_lucy_me {
+            True -> "visible"
+            False -> "hidden"
+          }),
+        ]),
+      ],
+      [
+        html.svg(
+          [
+            attribute.attribute("viewBox", "0 0 100 100"),
+            attribute.attribute("width", "100%"),
+            attribute.attribute("height", "100%"),
+            attribute.attribute("xmlns", "http://www.w3.org/2000/svg"),
+          ],
+          [
+            svg.g(
+              [
+                attribute.attribute(
+                  "transform",
+                  [
+                      "translate(50,50) ",
+                      "rotate(",
+                      model.angle
+                        |> int.to_string(),
+                      ")",
+                    ]
+                    |> string.join(""),
+                ),
+              ],
+              [
+                svg.path([
+                  attribute.attribute("d", full_command),
+                  attribute.attribute("stroke", "black"),
+                  attribute.attribute("stroke-width", "4px"),
+                  attribute.attribute("fill", {
+                    case model.cassie {
+                      "yes" -> "#ca551e"
+                      _ -> "#ffaff3"
+                    }
+                  }),
+                ]),
+                svg.g(
+                  [
+                    attribute.attribute(
+                      "transform",
+                      [
+                          "scale(",
+                          model.face_scale
+                            |> int.to_float()
+                            |> float.divide(100.0)
+                            |> result.unwrap(1.0)
+                            |> float.to_string(),
+                          ")",
+                        ]
+                        |> string.join(""),
                     ),
-                  ]),
-                  svg.g([attribute.attribute("transform", "rotate(90)")], [
-                    mouth(model.mouth_size, model.mouth_height),
-                  ]),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    ])
+                  ],
+                  [
+                    svg.g([attribute.attribute("transform", "rotate(90)")], [
+                      eyes(
+                        model.eye_distance,
+                        model.eye_height,
+                        model.happy,
+                        model.blink,
+                      ),
+                    ]),
+                    svg.g([attribute.attribute("transform", "rotate(90)")], [
+                      mouth(model.mouth_size, model.mouth_height),
+                    ]),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    )
   html.div([attribute.style([#("display", "flex")])], [lucy, form])
 }
 
