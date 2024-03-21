@@ -629,7 +629,7 @@ fn view(model: Model) -> Element(Msg) {
       ]),
       html.div([], [
         html.fieldset([], [
-          html.legend([], [element.text("Cassie")]),
+          html.legend([], [element.text("cassie")]),
           html.input([
             attribute.id("no-cassie"),
             attribute.type_("radio"),
@@ -668,14 +668,14 @@ fn view(model: Model) -> Element(Msg) {
             element.text("now lucy me"),
             {
               case model.can_lucy_me {
-                False -> element.text("(now you don't)")
+                False -> element.text(" (now you don't)")
                 True -> element.none()
               }
             },
           ],
         ),
       ]),
-      html.button([event.on_click(Reset)], [element.text("Reset")]),
+      html.button([event.on_click(Reset)], [element.text("reset")]),
     ])
 
   let angle_between_arms_radians = { pi() *. 2.0 } /. int.to_float(model.sides)
