@@ -5,8 +5,10 @@ import gleam/int
 import gleam/javascript.{type Reference}
 import gleam/list
 import gleam/pair
-import gleam/string
 import gleam/result
+import gleam/string
+import gleam_community/maths/elementary
+import glector.{Vector2}
 import lustre
 import lustre/attribute
 import lustre/effect.{type Effect}
@@ -15,34 +17,13 @@ import lustre/element/html
 import lustre/element/svg
 import lustre/event
 
-@external(javascript, "./external.js", "downloadSvg")
-fn download_svg(selector: String) -> Nil
-
 pub type RequestID
 
 @external(javascript, "./external.js", "requestAnimationFrame")
 pub fn request_animation_frame(callback: fn(Float) -> Nil) -> RequestID
 
-@external(javascript, "./external.js", "pi")
-fn pi() -> Float
-
-@external(javascript, "./external.js", "sin")
-fn sin(x: Float) -> Float
-
-@external(javascript, "./external.js", "cos")
-fn cos(x: Float) -> Float
-
-fn scale(point: #(Float, Float), scalar: Float) -> #(Float, Float) {
-  #(point.0 *. scalar, point.1 *. scalar)
-}
-
-fn lerp(v0: Float, v1: Float, t: Float) {
-  v0 +. t *. { v1 -. v0 }
-}
-
-fn lerp2d(v0: #(Float, Float), v1: #(Float, Float), t: Float) {
-  #(lerp(v0.0, v1.0, t), lerp(v0.1, v1.1, t))
-}
+@external(javascript, "./external.js", "downloadSvg")
+fn download_svg(selector: String) -> Nil
 
 fn cycle_left(l: List(a)) -> List(a) {
   l
@@ -687,7 +668,8 @@ fn view(model: Model) -> Element(Msg) {
       ]),
     ])
 
-  let angle_between_arms_radians = { pi() *. 2.0 } /. int.to_float(model.sides)
+  let angle_between_arms_radians =
+    { elementary.pi() *. 2.0 } /. int.to_float(model.sides)
   let arm_angles =
     list.range(0, model.sides - 1)
     |> list.map(int.to_float)
@@ -698,14 +680,14 @@ fn view(model: Model) -> Element(Msg) {
   let arm_points =
     arm_angles
     |> list.map(fn(angle) {
-      #(cos(angle), sin(angle))
-      |> scale(50.0)
+      Vector2(elementary.cos(angle), elementary.sin(angle))
+      |> glector.scale(50.0)
     })
   let pit_points =
     pit_angles
     |> list.map(fn(angle) {
-      #(cos(angle), sin(angle))
-      |> scale(50.0 /. { model.arm_ratio +. 1.0 })
+      Vector2(elementary.cos(angle), elementary.sin(angle))
+      |> glector.scale(50.0 /. { model.arm_ratio +. 1.0 })
     })
   let lines =
     [arm_points, pit_points]
@@ -714,15 +696,15 @@ fn view(model: Model) -> Element(Msg) {
     |> list.append([
       #(
         list.last(pit_points)
-          |> result.unwrap(#(0.0, 0.0)),
+          |> result.unwrap(glector.zero),
         list.first(arm_points)
-          |> result.unwrap(#(0.0, 0.0)),
+          |> result.unwrap(glector.zero),
       ),
     ])
     |> list.map(fn(line) {
       let t1 = int.to_float(100 - model.pointiness) /. 100.0 *. 0.5
       let t2 = 1.0 -. t1
-      #(lerp2d(line.0, line.1, t1), lerp2d(line.0, line.1, t2))
+      #(glector.lerp(line.0, line.1, t1), glector.lerp(line.0, line.1, t2))
     })
   let start_lines = every_odd(lines)
   let end_lines = every_even(lines)
@@ -750,45 +732,33 @@ fn view(model: Model) -> Element(Msg) {
           string.join(
             [
               // "L",
-                a1
-                |> pair.first()
+              a1.x
                 |> float.to_string(),
-              a1
-                |> pair.second()
+              a1.y
                 |> float.to_string(),
               "L",
-              a2
-                |> pair.first()
+              a2.x
                 |> float.to_string(),
-              a2
-                |> pair.second()
+              a2.y
                 |> float.to_string(),
               "Q",
-              b
-                |> pair.first()
+              b.x
                 |> float.to_string(),
-              b
-                |> pair.second()
+              b.y
                 |> float.to_string(),
-              c1
-                |> pair.first()
+              c1.x
                 |> float.to_string(),
-              c1
-                |> pair.second()
+              c1.y
                 |> float.to_string(),
               "L",
-              c2
-                |> pair.first()
+              c2.x
                 |> float.to_string(),
-              c2
-                |> pair.second()
+              c2.y
                 |> float.to_string(),
               "Q",
-              d
-                |> pair.first()
+              d.x
                 |> float.to_string(),
-              d
-                |> pair.second()
+              d.y
                 |> float.to_string(),
             ],
             " ",
@@ -801,16 +771,14 @@ fn view(model: Model) -> Element(Msg) {
     start_lines
     |> list.first()
     |> result.map(pair.first)
-    |> result.unwrap(#(0.0, 0.0))
+    |> result.unwrap(glector.zero)
   let full_command =
     [
       "M",
       segment_commands,
-      first_point
-        |> pair.first()
+      first_point.x
         |> float.to_string(),
-      first_point
-        |> pair.second()
+      first_point.y
         |> float.to_string(),
       "Z",
     ]
